@@ -6,6 +6,13 @@
 ```bash
 poetry install
 ```
+
+Установить линтер:
+```bash
+pre-commit install-hooks
+pre-commit install
+```
+
 Создать `.env` файл с настройкми бота (`.env_example -> .env`):
 ```bash
 TOKEN=<YANDEX AUTH TOKEN>
