@@ -20,6 +20,8 @@ client = Client(os.environ["TOKEN"]).init()
 
 @dataclass
 class CustomAlbum:
+    """Класс Альбома с нужной для отправки информацией."""
+
     title: str
     tracks: list[Track]
     cover_uri: str
@@ -32,18 +34,18 @@ def get_album_info(album_id: int, cover_size: str = "1000x1000") -> CustomAlbum:
     return CustomAlbum(album.title, album.volumes[0], cover_uri)
 
 
-def make_entity(name: str, url: str) -> MessageEntity:
-    """Создать прикрепление картинки к сообщению."""
+def make_cover_entity(name: str, url: str) -> MessageEntity:
+    """Создание прикрепление картинки к сообщению."""
     offset = len(name) + 1
     return MessageEntity(type="text_link", offset=offset, length=1, url=url)
 
 
 def send_album_presentation(name: str, url: str) -> None:
-    """Функция отправляет карточку с названием, хештегом и обложкой в канал."""
+    """Функция отправляет карточку с названием, хештегом и обложкой в главный канал."""
     hashtag = "#" + name.replace(" ", "_").replace("-", "_")
     text = f"{hashtag} \n{name}"
     print(f"{name} - {hashtag}")
-    bot.send_message(MAIN_CHAT_ID, text, entities=[make_entity(name, url)])
+    bot.send_message(MAIN_CHAT_ID, text, entities=[make_cover_entity(name, url)])
 
 
 def send_album_by_id(album_id: int) -> None:
@@ -53,26 +55,26 @@ def send_album_by_id(album_id: int) -> None:
     media_group = make_media_group_ids(album.tracks, cover)
     send_album_presentation(name=album.title, url=album.cover_uri)
     if len(media_group) <= 10:
-        bot.send_media_group(MAIN_CHAT_ID, media=[
-            InputMediaAudio(audio) for audio in media_group
-        ])
+        bot.send_media_group(
+            MAIN_CHAT_ID, media=[InputMediaAudio(audio) for audio in media_group]
+        )
         return
     for i in range(0, len(media_group), 10):
         if i >= len(media_group) - 10:
             temp_media_group = media_group[i:]
         else:
-            temp_media_group = media_group[i:i+10]
-        media = bot.send_media_group(MAIN_CHAT_ID, media=[InputMediaAudio(
-            audio) for audio in temp_media_group])
+            temp_media_group = media_group[i : i + 10]
+        bot.send_media_group(
+            MAIN_CHAT_ID, media=[InputMediaAudio(audio) for audio in temp_media_group]
+        )
         time.sleep(30)
 
 
 def make_media_group_ids(tracks: list[Track], cover: bytes) -> tuple[Audio]:
-    """."""
+    """Архивирование file_id в кортеж отправленных в бекчат аудио."""
     media_group_ids = []
     for track in tracks:
-        bin = requests.get(track.get_download_info()[
-                           0].get_direct_link()).content
+        bin = requests.get(track.get_download_info()[0].get_direct_link()).content
         performer = ", ".join(
             artist.name for artist in track.artists if artist.name is not None
         )
@@ -84,9 +86,11 @@ def make_media_group_ids(tracks: list[Track], cover: bytes) -> tuple[Audio]:
 
 
 def main():
-    ARTIST = 7461723
-    ids = [album.id for album in client.artists_direct_albums(
-        ARTIST, page_size=100).albums]
+    """Запуск скачивания всех альбомов артиста в телеграм."""
+    artist = 7461723
+    ids = [
+        album.id for album in client.artists_direct_albums(artist, page_size=100).albums
+    ]
     ids = ids[::-1]
     for _id in ids:
         send_album_by_id(_id)
