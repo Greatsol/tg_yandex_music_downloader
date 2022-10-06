@@ -23,5 +23,5 @@ BACK_CHAT_ID=<CHAT ID FOR TRACKS>
 
 ## Запуск
 ```bash
-poetry run python bot.py
+poetry run python app/bot.py
 ```
