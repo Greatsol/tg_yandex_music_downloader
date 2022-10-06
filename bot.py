@@ -1,16 +1,21 @@
 from dataclasses import dataclass
 import time
+import os
 
 import requests
 import telegram
+from dotenv import load_dotenv
 from telegram import Audio, InputMediaAudio, MessageEntity
 from yandex_music import Client, Track
 
-from config import BACK_CHAT_ID, MAIN_CHAT_ID, TG_TOKEN, TOKEN
+
+load_dotenv()
+BACK_CHAT_ID = os.environ["BACK_CHAT_ID"]
+MAIN_CHAT_ID = os.environ["MAIN_CHAT_ID"]
 
 
-bot = telegram.Bot(TG_TOKEN)
-client = Client(TOKEN).init()
+bot = telegram.Bot(os.environ["TG_TOKEN"])
+client = Client(os.environ["TOKEN"]).init()
 
 
 @dataclass
